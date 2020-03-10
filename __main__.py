@@ -6,7 +6,7 @@ from nmigen.cli import main
 from nmigen.back.pysim import *
 
 # python3 -m ML simulate -c 10 -v test.vcd
-from .perceptron import Perceptron
+from .layer import Layer
 
 from .settings import *
 
@@ -29,12 +29,10 @@ class Main(Elaboratable):
 	def elaborate(self, platform):
 		m = Module()
 
-		m.submodules.per = Perceptron(*self.b)
-		# or anonymous submodules
-		# m.submodules += Mod1(2)	
+		m.submodules.layer = Layer([self.b])	
 
-		m.d.comb += [ m.submodules.per[n].eq( signal ) for n, signal in enumerate(self.s) ]
-		m.d.comb += self.ret.eq(m.submodules.per.o)
+		m.d.comb += [ m.submodules.layer.input[n].eq( signal ) for n, signal in enumerate(self.s) ]
+		m.d.comb += self.ret.eq(m.submodules.layer.raw[0])
 
 
 		#[source for creating testbench] http://blog.lambdaconcept.com/doku.php?id=nmigen:nmigen_sim_testbench_sync
@@ -57,7 +55,7 @@ if __name__ == "__main__":
 	#b is the liniar coeficients used on the linear regression and will be passed to the perceptron
 	b = [2.32831355e-02, -1.07644595e+00, -1.44067150e-01,  6.57402064e-03, -1.82427840e+00,  3.42047216e-03, -3.42657365e-03, -1.49541411e+01, -2.91748283e-01,  8.72400085e-01,  2.77567469e-01, 18.713908307334766]
 	top = Main(b)
-#	main(top)
+	#main(top)
 
 	#opening dataset to get the data for the test
 	with open("./ML/data/wine.pickle", 'rb') as file:
