@@ -7,10 +7,20 @@ from .settings import WIDTH
 
 class Layer(Elaboratable):
 	def __init__(self, weight_matrix, limits=None, n_bits=WIDTH):
+		"""
+			- weight_matrix : coeficient matrix on which each line is a perceptron
+			- limits : list on which will determine the value the perceptron returns 1.
+			- n_bits : ammount of bit for each signal inside the layer 
+		"""
 		if limits is None:
 			limits = [0.5 for _ in weight_matrix[0]]
 
-		# size limites = column ammount in weight_matrix
+		size = len(weight_matrix[0])
+		if any([size != len(line) for line in weight_matrix[1:]]):
+			raise Exception("(must change the type of error) Perceptrons with different number of coeficients")
+
+		if len(limits) != len(weight_matrix):
+			raise Exception("(must change the type of error) Ammount of limits is different from ammount of perceptrons")
 
 		self.perceptrons = [Perceptron(*line, lim=limits[n], n_bits=n_bits) for n, line in enumerate(weight_matrix)]
 
@@ -23,13 +33,18 @@ class Layer(Elaboratable):
 			self.raw.append(Signal(n_bits))
 
 	def __getitem__(self, index):
-		return self.perceptrons[index].out
+		return self.output[index]
 
 	def __call__(self, index):
-		return self.perceptrons[index].raw
+		return self.raw[index]
 
 	def __iter__(self, *args, **kwargs):
 		return self.perceptrons.__iter__(*args, **kwargs)
+
+	def __eq__(self, other):
+		if not isinstance(other, Layer):
+			return False
+		return all([other.perceptrons[n] == per for n, per in enumerate(self)])
 
 	def elaborate(self, platform):
 		m = Module()
