@@ -24,6 +24,11 @@ class Perceptron(Elaboratable):
 	def __getitem__(self, index):
 		return self.ports[index]
 
+	def __eq__(self, other):
+		if not isinstance(other, Perceptron):
+			return false
+		return (self.b == other.b and self.lim == other.lim)
+
 	def elaborate(self, platform):
 		m = Module()
 
