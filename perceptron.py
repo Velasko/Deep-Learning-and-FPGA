@@ -33,7 +33,7 @@ class Perceptron(Elaboratable):
 		m = Module()
 
 		m.d.comb += self.raw.eq( self.b[-1] + (sum([self.b[n] * port for n, port in enumerate(self.ports)]) >> OFFSET) )
-		m.d.comb += self.out[16].eq( self.raw > self.lim )
+		m.d.comb += self.out[OFFSET].eq( self.raw > self.lim )
 
 		return m
 
