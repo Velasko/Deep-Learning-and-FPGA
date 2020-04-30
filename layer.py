@@ -13,7 +13,7 @@ class Layer(Elaboratable):
 			- n_bits : ammount of bit for each signal inside the layer 
 		"""
 		if limits is None:
-			limits = [0.5 for _ in weight_matrix[0]]
+			limits = [0.5 for _ in weight_matrix]
 
 		size = len(weight_matrix[0])
 		if any([size != len(line) for line in weight_matrix[1:]]):
@@ -48,13 +48,14 @@ class Layer(Elaboratable):
 
 	def elaborate(self, platform):
 		m = Module()
-		m.submodules += self.perceptrons
 
 		for n, port in enumerate(self.input):
 			for per in self.perceptrons:
 				m.d.comb += per[n].eq( port )
 
 		for n, per in enumerate(self.perceptrons):
+			m.submodules.__setattr__("perceptron_%d" % (n+1), per)
+
 			m.d.comb += self.output[n].eq( per.out )
 			m.d.comb += self.raw[n].eq( per.raw )
 

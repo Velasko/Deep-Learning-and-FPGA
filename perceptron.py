@@ -14,7 +14,7 @@ class Perceptron(Elaboratable):
 		n_bits : number of bits for each signal. Default: WIDTH variable in settings.
 		*b : values of b on which will be multiplied with X. The last one is considered b0.
 	"""
-	def __init__(self, *b, n_bits=WIDTH, lim=0.5):
+	def __init__(self, *b, n_bits=WIDTH, lim=5.5):
 		self.lim = int(lim*ONE)
 		self.b = b
 		self.ports = [Signal(n_bits) for _ in range(len(b) - 1)]

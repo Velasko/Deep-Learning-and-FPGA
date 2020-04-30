@@ -6,20 +6,18 @@ from nmigen.cli import main
 from nmigen.back.pysim import *
 
 # python3 -m ML simulate -c 10 -v test.vcd
-from .NeuralNetwork import NeuralNetwork
+from .layer import Layer
 
 from .settings import *
 
 class Main(Elaboratable):
 	def __init__(self, b):
 
-		for l, layer in enumerate(b):
-			for p, perceptron in enumerate(layer):
-				for v, value in enumerate(perceptron):
-					b[l][p][v] = int(value*ONE)
+		for n, value in enumerate(b):
+			b[n] = int(value*ONE)
 
 		self.b = b
-		self.s = [Signal(WIDTH) for _ in enumerate(b[0][0][:-1])]
+		self.s = [Signal(WIDTH) for _ in enumerate(b[:-1])]
 		self.ret = Signal(WIDTH)
 
 		self.real = Signal(WIDTH)
@@ -31,10 +29,10 @@ class Main(Elaboratable):
 	def elaborate(self, platform):
 		m = Module()
 
-		m.submodules.nn = NeuralNetwork(self.b)	
+		m.submodules.layer = Layer([self.b])	
 
-		m.d.comb += [ m.submodules.nn.input[n].eq( signal ) for n, signal in enumerate(self.s) ]
-		m.d.comb += self.ret.eq(m.submodules.nn.raw[0])
+		m.d.comb += [ m.submodules.layer.input[n].eq( signal ) for n, signal in enumerate(self.s) ]
+		m.d.comb += self.ret.eq(m.submodules.layer.raw[0])
 
 
 		#[source for creating testbench] http://blog.lambdaconcept.com/doku.php?id=nmigen:nmigen_sim_testbench_sync
@@ -55,11 +53,7 @@ class Main(Elaboratable):
 
 if __name__ == "__main__":
 	#b is the liniar coeficients used on the linear regression and will be passed to the perceptron
-	#this is using a mlp architecture with a single perceptron
-	#The inner list is a single perceptron
-	#The list containing the perceptrons is the layer
-	#The list containing the layers is the NeuralNetwork
-	b = [[[2.32831355e-02, -1.07644595e+00, -1.44067150e-01,  6.57402064e-03, -1.82427840e+00,  3.42047216e-03, -3.42657365e-03, -1.49541411e+01, -2.91748283e-01,  8.72400085e-01,  2.77567469e-01, 18.713908307334766]]]
+	b = [2.32831355e-02, -1.07644595e+00, -1.44067150e-01,  6.57402064e-03, -1.82427840e+00,  3.42047216e-03, -3.42657365e-03, -1.49541411e+01, -2.91748283e-01,  8.72400085e-01,  2.77567469e-01, 18.713908307334766]
 	top = Main(b)
 	#main(top)
 

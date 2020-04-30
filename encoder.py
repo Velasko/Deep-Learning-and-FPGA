@@ -76,7 +76,6 @@ if __name__ == '__main__':
 	x = NeuralNetwork([[[1, 2, 3], [2, 3, 4], [1, 1, 1]], [[2, 2, 2, 2], [3, 3, 3, 3]]], limits=[[1, 1, 2], [1, 2]])
 
 	y = json.dumps(x, cls=MyEncoder, indent=4)
-	print(y)
 
 	z = json.loads(y, object_hook=MyEncoder.decode_object)
 

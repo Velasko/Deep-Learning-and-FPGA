@@ -29,9 +29,9 @@ class NeuralNetwork(Elaboratable):
 			if len(self.layers[n].output) != len(layer.input):
 				raise Exception("(must change the type of error) Incoerence between the layer matrix")
 
-		self.input = [Signal(n_bits) for _ in layers[0]]
-		self.output = [Signal(n_bits) for _ in layers[-1]]
-		self.raw = [Signal(n_bits) for _ in layers[-1]]
+		self.input = [Signal(n_bits) for _ in self.layers[0].input]
+		self.output = [Signal(n_bits) for _ in self.layers[-1].output]
+		self.raw = [Signal(n_bits) for _ in self.layers[-1].raw]
 
 		self.use_raw = use_raw
 
@@ -48,10 +48,13 @@ class NeuralNetwork(Elaboratable):
 
 	def elaborate(self, platform):
 		m = Module()
-		m.submodules += self.layers
+		m.submodules.__setattr__("layer_1", self.layers[0])
 
 		#to connect each layer
 		for n, layer in enumerate(self.layers[1:]):
+			m.submodules.__setattr__("layer_%d" % (n+2), layer)
+
+
 			#n will take the previous layer due the [1:], which skips the first item
 
 			connection = self.layers[n].output
@@ -62,12 +65,14 @@ class NeuralNetwork(Elaboratable):
 				m.d.comb += wire.eq(layer[pos])
 
 		#conecting the first layer to the module input
-		for perceptron in self.layers[0]:
-			for n, inp in enumerate(self.input):
-				m.d.comb += perceptron[n].eq(inp)
+		for n, inp in enumerate(self.input):
+			m.d.comb += self.layers[0].input[n].eq(inp)
 
 		#conecting the last layer to the module output
-		for n, perceptron in enumerate(self.layers[-1]):
-			m.d.comb += self.output[n].eq(perceptron)
+		for n, out in enumerate(self.layers[-1].output):
+			m.d.comb += self.output[n].eq(out)
+
+		for n, raw in enumerate(self.layers[-1].raw):
+			m.d.comb += self.raw[n].eq(raw)
 
 		return m
